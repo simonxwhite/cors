@@ -1,0 +1,80 @@
+<!DOCTYPE HTML>
+<html>
+<body>
+
+  <h3>XDomain Search</h3>
+  <div id="messages"></div>
+
+  <script src="https://rawgit.com/jpillora/xdomain/gh-pages/dist/xdomain.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1/jquery.js"></script>
+
+  <script type="text/javascript">
+    setupLogging();
+
+    // var url = 'https://echo.jpillora.com/foo/bar';
+    var url = 'https://search.astrazeneca.com/proxy.json';
+
+    console.log('Origin: ' + window.location.origin);
+    console.log('URL: ' + url);
+    console.log('');
+
+    // configure xdomain
+    var slaveConfig = {};
+    slaveConfig['https://echo.jpillora.com'] = "/proxy.html";
+    slaveConfig['https://search.astrazeneca.com'] = "/proxy.html";
+    xdomain.debug = true;
+    xdomain.slaves(slaveConfig);
+    
+    // make cross domain xhr
+    var settings = {
+      success: function(data, textStatus, jqXHR) {
+        console.log('');
+        console.log('textStatus: ' + textStatus);
+        console.log('');
+        console.log('data: ' + JSON.stringify(data));
+        console.log('jqXHR: ' + JSON.stringify(jqXHR));
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+        console.log('');
+        console.log('textStatus: ' + textStatus);
+        console.log('');
+        console.log('errorThrown: ' + errorThrown);
+        console.log('jqXHR: ' + JSON.stringify(jqXHR));
+      },
+    }
+
+    $.ajax(url, settings);
+
+    function setupLogging() {
+      console.log = logMessage;
+      console.warn = logMessage;
+      console.error = logMessage;
+      xdomain.log = logMessage;
+      xdomain.warn = logMessage;
+
+      // Listen for messages from child iframe
+      var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
+      var eventer = window[eventMethod];
+      var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
+
+      eventer(messageEvent, function(e) {
+        var key = e.message ? "message" : "data";
+        var data = e[key];
+        
+        if (/^xdomain/.test(data)) {
+          logMessage(data);
+        }
+      }, false);
+
+      function logMessage(message) {
+        if (typeof message == 'object') {
+          $('#messages').append(JSON.stringify(message) + '<br>');
+        } else {
+          $('#messages').append(message + '<br>');
+        }
+      }
+    }
+  </script>
+
+</body>
+</html>
