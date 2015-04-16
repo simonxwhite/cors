@@ -1,0 +1,53 @@
+<!DOCTYPE HTML>
+<html>
+<body>
+
+  <h3>CORS Demo</h3>
+  <div id="messages"></div>
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1/jquery.js"></script>
+
+  <script type="text/javascript">
+    setupLogging();
+
+    // var url = 'https://echo.jpillora.com/foo/bar';
+    var url = 'https://search.astrazeneca.com/proxy.json';
+
+    console.log('Origin: ' + window.location.origin);
+    console.log('URL: ' + url);
+    console.log('');
+
+    var settings = {
+      success: function(data, textStatus, jqXHR) {
+        console.log('textStatus: ' + textStatus);
+        console.log('');
+        console.log('data: ' + JSON.stringify(data));
+        console.log('jqXHR: ' + JSON.stringify(jqXHR));
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+        console.log('textStatus: ' + textStatus);
+        console.log('');
+        console.log('errorThrown: ' + errorThrown);
+        console.log('jqXHR: ' + JSON.stringify(jqXHR));
+      },
+    };
+
+    $.ajax(url, settings);
+
+    function setupLogging() {
+      console.log = logMessage;
+      console.warn = logMessage;
+      console.error = logMessage;
+
+      function logMessage(message) {
+        if (typeof message == 'object') {
+          $('#messages').append(JSON.stringify(message) + '<br>');
+        } else {
+          $('#messages').append(message + '<br>');
+        }
+      }
+    }
+  </script>
+
+</body>
+</html>
